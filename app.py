@@ -32,11 +32,24 @@ def health():
 
 @app.route('/similar', methods=['POST'])
 def similar():
-    data = request.get_json()
+    try:
+        data = request.get_json(force=True)
+    except Exception as e:
+        return jsonify({"error": "Invalid JSON format", "details": str(e)}), 400
+        
+    if not data or 'window' not in data:
+        return jsonify({"error": "Missing 'window' key in JSON"}), 400
+        
     window = data.get('window')
-    if not window:
-        return jsonify({"error": "no window"}), 400
+    if not isinstance(window, list) or len(window) == 0:
+        return jsonify({"error": "'window' must be a non-empty list"}), 400
+        
     query_vec = encode_window(window)
+    
+    # Validate vector size (expected 120 for 30 bars * 4 features)
+    if len(query_vec) != 120:
+        return jsonify({"error": f"Vector size mismatch. Expected 120, got {len(query_vec)}"}), 400
+
     try:
         results = client.search(
             collection_name="winning_patterns",
