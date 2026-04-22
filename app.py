@@ -16,6 +16,16 @@ def encode_window(window_list):
     norm = np.linalg.norm(arr)
     return (arr / norm).tolist() if norm > 0 else arr.tolist()
 
+@app.route('/', methods=['GET'])
+def index():
+    return jsonify({
+        "message": "Qdrant Similarity Search API is running",
+        "endpoints": {
+            "health": "/health",
+            "similar": "/similar (POST)"
+        }
+    })
+
 @app.route('/health', methods=['GET'])
 def health():
     return jsonify({"status": "ok"})
